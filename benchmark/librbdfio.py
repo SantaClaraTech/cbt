@@ -47,6 +47,7 @@ class LibrbdFio(Benchmark):
         self.pool_name = config.get("poolname", "cbt-librbdfio")
         self.recov_pool_name = config.get("recov_pool_name", "cbt-librbdfio-recov")
         self.rbdname = config.get('rbdname', '')
+        self.clientname = config.get('clientname', 'admin')
 
         self.total_procs = self.procs_per_volume * self.volumes_per_client * len(settings.getnodes('clients').split(','))
         self.run_dir = '%s/osd_ra-%08d/op_size-%08d/concurrent_procs-%03d/iodepth-%03d/%s' % (self.run_dir, int(self.osd_ra), int(self.op_size), int(self.total_procs), int(self.iodepth), self.mode)
@@ -90,7 +91,7 @@ class LibrbdFio(Benchmark):
         if (self.use_existing_volumes == False):
             for volnum in range(self.volumes_per_client):
                 rbd_name = 'cbt-librbdfio-`%s`-%d' % (common.get_fqdn_cmd(), volnum)
-                pre_cmd = 'sudo %s --ioengine=rbd --clientname=admin --pool=%s --rbdname=%s --invalidate=0  --rw=write --numjobs=%s --bs=4M --size %dM %s --output-format=%s > /dev/null' % (self.cmd_path, self.pool_name, rbd_name, self.numjobs, self.vol_size, self.names, self.fio_out_format)
+                pre_cmd = 'sudo %s --ioengine=rbd --clientname=%s --pool=%s --rbdname=%s --invalidate=0  --rw=write --numjobs=%s --bs=4M --size %dM %s --output-format=%s > /dev/null' % (self.cmd_path, self.clientname, self.pool_name, rbd_name, self.numjobs, self.vol_size, self.names, self.fio_out_format)
                 p = common.pdsh(settings.getnodes('clients'), pre_cmd)
                 ps.append(p)
             for p in ps:
@@ -158,7 +159,7 @@ class LibrbdFio(Benchmark):
         logger.debug('Using rbdname %s', rbdname)
         out_file = '%s/output.%d' % (self.run_dir, volnum)
 
-        fio_cmd = 'sudo %s --ioengine=rbd --clientname=admin --pool=%s --rbdname=%s --invalidate=0' % (self.cmd_path_full, self.pool_name, rbdname)
+        fio_cmd = 'sudo %s --ioengine=rbd --clientname=%s --pool=%s --rbdname=%s --invalidate=0' % (self.cmd_path_full, self.clientname, self.pool_name, rbdname)
         fio_cmd += ' --rw=%s' % self.mode
         fio_cmd += ' --output-format=%s' % self.fio_out_format
         if (self.mode == 'readwrite' or self.mode == 'randrw'):

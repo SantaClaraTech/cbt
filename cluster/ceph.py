@@ -558,7 +558,7 @@ class Ceph(Cluster):
             stdout, stderr = common.pdsh(settings.getnodes('head'), 'echo %s >> %s' % (header, recstatsfile)).communicate()
 
         while True:
-            stdout, stderr = common.pdsh(settings.getnodes('head'), '%s -c %s health %s' % (self.ceph_cmd, self.tmp_conf, logline)).communicate()
+            stdout, stderr = common.pdsh(settings.getnodes('head'), 'sudo %s -c %s health %s' % (self.ceph_cmd, self.tmp_conf, logline)).communicate()
             self.log_recovery_stats(recstatsfile)
             if check_list and not any(x in stdout for x in check_list):
                 break
@@ -692,7 +692,7 @@ class Ceph(Cluster):
         time.sleep(20)
         start_time = time.time()
         while True:
-            stdout, stderr = common.pdsh(settings.getnodes('head'), '%s;%s -c %s progress %s' % (logdate, self.ceph_cmd, self.tmp_conf, logline)).communicate()
+            stdout, stderr = common.pdsh(settings.getnodes('head'), '%s;sudo %s -c %s progress %s' % (logdate, self.ceph_cmd, self.tmp_conf, logline)).communicate()
             output = (stdout, stderr)
             for i in range(len(output)):
                 if any(pg_state in output[i] for pg_state in pg_autoscaler_states):
@@ -878,7 +878,7 @@ class Ceph(Cluster):
         if data_pool:
             dp_option = "--data-pool %s" % data_pool
         try:
-            common.pdsh(settings.getnodes('head'), '%s -c %s create %s --size %s --pool %s %s --order %s' % (self.rbd_cmd, self.tmp_conf, name, size, pool, dp_option, order), continue_if_error=False).communicate()
+            common.pdsh(settings.getnodes('head'), 'sudo %s -c %s create %s --size %s --pool %s %s --order %s' % (self.rbd_cmd, self.tmp_conf, name, size, pool, dp_option, order), continue_if_error=False).communicate()
         except Exception as e:
             logger.error(str(e))
 
